@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CareFlow IIoT — Login</title>
+  <meta name="description" content="CareFlow IIoT Industrial Energy Monitoring Dashboard — Secure Login">
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/login.css">
+</head>
+<body class="login-body">
+
+  <!-- Animated Background -->
+  <div class="login-bg">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+
+  <!-- Login Card -->
+  <div class="login-card">
+    <div class="login-brand">
+      <div class="login-brand-icon">⬡</div>
+      <div class="login-brand-name">CAREFLOW</div>
+      <div class="login-brand-sub">IIoT ENERGY MONITORING SYSTEM</div>
+      <div class="login-brand-tag">🔒 SECURE INDUSTRIAL ACCESS</div>
+    </div>
+
+    <form class="login-form" onsubmit="handleLogin(event)">
+      <div id="login-error" class="login-error"></div>
+
+      <div class="input-group">
+        <label>USERNAME</label>
+        <span class="input-icon">👤</span>
+        <input type="text" id="login-user" placeholder="Enter your username" autocomplete="username" autofocus>
+      </div>
+
+      <div class="input-group">
+        <label>PASSWORD</label>
+        <span class="input-icon">🔑</span>
+        <input type="password" id="login-pass" placeholder="Enter your password" autocomplete="current-password">
+      </div>
+
+      <button type="submit" class="login-btn">AUTHENTICATE →</button>
+    </form>
+
+    <div class="demo-creds">
+      <div class="demo-creds-title">DEMO CREDENTIALS — CLICK TO FILL</div>
+      <div class="demo-cred-row">
+        <div class="demo-cred-role">
+          <div class="demo-cred-dot" style="background:var(--amber)"></div>
+          Admin / CEO
+        </div>
+        <div class="demo-cred-info" onclick="fillCredentials('admin','admin123')">admin · admin123</div>
+      </div>
+      <div class="demo-cred-row">
+        <div class="demo-cred-role">
+          <div class="demo-cred-dot" style="background:var(--cyan)"></div>
+          Technician
+        </div>
+        <div class="demo-cred-info" onclick="fillCredentials('tech01','tech123')">tech01 · tech123</div>
+      </div>
+      <div class="demo-cred-row">
+        <div class="demo-cred-role">
+          <div class="demo-cred-dot" style="background:var(--green)"></div>
+          Worker
+        </div>
+        <div class="demo-cred-info" onclick="fillCredentials('worker','worker123')">worker · worker123</div>
+      </div>
+    </div>
+
+    <div class="login-footer">
+      CAREFLOW V1 · SOUTHERN INDUSTRIES © 2026
+    </div>
+  </div>
+
+  <script src="js/auth.js"></script>
+  <script>checkExistingSession();</script>
+</body>
+</html>

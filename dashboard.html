@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CareFlow IIoT — Industrial Dashboard</title>
+    <meta name="description"
+        content="CareFlow IIoT Industrial Energy Monitoring Dashboard with multi-generator support and predictive maintenance">
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+</head>
+
+<body class="dash-body">
+
+    <!-- ======================== SIDEBAR ======================== -->
+    <div class="sidebar">
+        <div class="brand">
+            <div class="brand-logo">
+                <div class="live-dot"></div>CAREFLOW
+            </div>
+            <div class="brand-sub">IIoT ENERGY MONITOR · V1</div>
+            <div class="site-tag">📍 SITE-01 — SOUTHERN INDUSTRIES</div>
+        </div>
+        <div class="nav">
+            <div class="nav-section">NAVIGATION</div>
+            <div class="nav-item active" onclick="switchRole('admin')">
+                <span class="nav-icon">⬡</span>Overview
+            </div>
+            <div class="nav-item" onclick="switchRole('admin')">
+                <span class="nav-icon">📊</span>Analytics
+            </div>
+            <div class="nav-item" onclick="switchRole('admin')">
+                <span class="nav-icon">🤖</span>AI Agent
+            </div>
+            <div class="nav-section">OPERATIONS</div>
+            <div class="nav-item" onclick="switchRole('tech')">
+                <span class="nav-icon">⚡</span>Live Readings
+            </div>
+            <div class="nav-item" onclick="switchRole('tech')">
+                <span class="nav-icon">🔔</span>Alarms <span class="nav-badge" id="alarm-badge">3</span>
+            </div>
+            <div class="nav-item" onclick="switchRole('tech')">
+                <span class="nav-icon">🔧</span>Maintenance
+            </div>
+            <div class="nav-section">HOME & AUTO</div>
+            <div class="nav-item" onclick="switchRole('tech')">
+                <span class="nav-icon">🏠</span>Home Control
+            </div>
+            <div class="nav-section">MONITORING</div>
+            <div class="nav-item" onclick="switchRole('worker')">
+                <span class="nav-icon">👷</span>Worker View
+            </div>
+        </div>
+        <div class="role-switcher" id="role-switcher-section">
+            <div class="role-label">ACTIVE ROLE</div>
+            <button class="role-btn active" data-role="admin" onclick="switchRole('admin')">
+                <div class="role-dot" style="background:var(--amber)"></div>Admin / CEO
+            </button>
+            <button class="role-btn" data-role="tech" onclick="switchRole('tech')">
+                <div class="role-dot" style="background:var(--cyan)"></div>Technician
+            </button>
+            <button class="role-btn" data-role="worker" onclick="switchRole('worker')">
+                <div class="role-dot" style="background:var(--green)"></div>Worker
+            </button>
+            <button class="logout-btn" onclick="logout()">🚪 Logout</button>
+        </div>
+    </div>
+
+    <!-- ======================== MAIN CONTENT ======================== -->
+    <div class="main">
+        <!-- TOPBAR -->
+        <div class="topbar">
+            <div class="topbar-title" id="topbar-title">Admin <span>Dashboard</span></div>
+            <div class="status-pill ok" id="system-status">
+                <div class="blink-dot"></div>LIVE · NOMINAL
+            </div>
+            <div class="clock" id="clock">—</div>
+            <div class="icon-btn" onclick="toggleNotif()">🔔<div class="badge-dot" id="notif-count">3</div>
+            </div>
+            <div class="icon-btn" title="Fullscreen" onclick="document.documentElement.requestFullscreen()">⛶</div>
+            <div class="avatar" id="avatar" title="">JH</div>
+
+            <!-- Notification Panel -->
+            <div class="notif-panel" id="notif-panel">
+                <div class="notif-hd">Notifications <span class="notif-clear" onclick="clearNotifs()">CLEAR ALL</span>
+                </div>
+                <div class="notif-item">
+                    <div class="notif-icon">⚠️</div>
+                    <div class="notif-body">
+                        <div class="notif-msg">THD Voltage L3 elevated — 4.8%</div>
+                        <div class="notif-time">2 MIN AGO</div>
+                    </div>
+                </div>
+                <div class="notif-item">
+                    <div class="notif-icon">🔋</div>
+                    <div class="notif-body">
+                        <div class="notif-msg">ML: Bearing RUL &lt; 72h — Schedule maintenance</div>
+                        <div class="notif-time">14 MIN AGO</div>
+                    </div>
+                </div>
+                <div class="notif-item">
+                    <div class="notif-icon">⚡</div>
+                    <div class="notif-body">
+                        <div class="notif-msg">Power factor dipped to 0.81 on L2</div>
+                        <div class="notif-time">1 HR AGO</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="content">
+
+            <!-- ================================================== -->
+            <!-- ================= ADMIN VIEW ====================== -->
+            <!-- ================================================== -->
+            <div class="view active" id="view-admin">
+
+                <!-- KPI ROW: Energy, Power Factor, Cost, System Health -->
+                <div class="kpi-grid">
+                    <div class="kpi c">
+                        <div class="kpi-lbl">TOTAL ENERGY TODAY</div>
+                        <div class="kpi-val"><span id="kpi-energy">2,229</span><span class="kpi-unit">kWh</span></div>
+                        <div class="kpi-sub up">↑ 3.2% vs yesterday</div>
+                    </div>
+                    <div class="kpi g">
+                        <div class="kpi-lbl">AVG POWER FACTOR</div>
+                        <div class="kpi-val"><span id="kpi-pf">0.89</span></div>
+                        <div class="kpi-sub">ACROSS ALL GENERATORS</div>
+                    </div>
+                    <div class="kpi a">
+                        <div class="kpi-lbl">ENERGY COST</div>
+                        <div class="kpi-val"><span id="kpi-cost">৳17,587</span></div>
+                        <div class="kpi-sub dn">↑ 1.8% from budget</div>
+                    </div>
+                    <div class="kpi p">
+                        <div class="kpi-lbl">SYSTEM HEALTH</div>
+                        <div class="kpi-val"><span id="kpi-health">82</span><span class="kpi-unit">%</span></div>
+                        <div class="kpi-sub up">ML CONFIDENCE HIGH</div>
+                    </div>
+                </div>
+
+                <!-- 30 DAY POWER USAGE + FREQUENCY/PF -->
+                <div class="g31 mt">
+                    <div class="card">
+                        <div class="card-hd"><span class="hd-icon">📈</span>Power Usage — Last 30 Days</div>
+                        <div class="chart-wrap"><canvas id="chart-30day"></canvas></div>
+                        <div class="chart-legend">
+                            <div class="cl-item">
+                                <div class="cl-line" style="background:var(--cyan)"></div>Daily Usage (kWh)
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-hd"><span class="hd-icon">🔄</span>Frequency</div>
+                        <div class="gauge-wrap">
+                            <div class="gauge-val" id="freq-val">50.02</div>
+                            <div class="gauge-unit">Hz</div>
+                            <div class="gauge-label">NETWORK FREQUENCY</div>
+                            <div class="gauge-status">✓ NOMINAL 50Hz</div>
+                        </div>
+                        <div class="sep"></div>
+                        <div class="stat-row">
+                            <div class="stat-cell">
+                                <div class="stat-v" style="color:var(--cyan)" id="pf-stat">0.89</div>
+                                <div class="stat-l">PF AVG</div>
+                            </div>
+                            <div class="stat-cell">
+                                <div class="stat-v" style="color:var(--amber)" id="thd-stat">4.8</div>
+                                <div class="stat-l">THD-V %</div>
+                            </div>
+                            <div class="stat-cell">
+                                <div class="stat-v" style="color:var(--green)" id="q-stat">50.4</div>
+                                <div class="stat-l">kVAr</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- GENERATORS SECTION -->
+                <div class="sep"></div>
+                <div class="sec-title">⚡ Generators (3 Units)</div>
+                <div class="gen-grid" id="gen-panels">
+                    <!-- Dynamically rendered -->
+                </div>
+
+                <!-- DISTRIBUTORS SECTION -->
+                <div class="sep"></div>
+                <div class="sec-title">🔌 Distributors (3 Panels)</div>
+                <div class="gen-grid" id="dist-panels">
+                    <!-- Dynamically rendered -->
+                </div>
+
+                <!-- ENERGY DONUT + ML HEALTH + WEEKLY -->
+                <div class="g3 mt2">
+                    <div class="card">
+                        <div class="card-hd"><span class="hd-icon">⚡</span>Energy Distribution</div>
+                        <div
+                            style="position:relative;height:140px;display:flex;align-items:center;justify-content:center;">
+                            <canvas id="chart-energy" style="max-height:140px;max-width:140px;"></canvas>
+                            <div style="position:absolute;text-align:center;">
+                                <div style="font-family:var(--ff-heading);font-size:20px;font-weight:700;color:var(--cyan);"
+                                    id="total-energy-donut">2,229</div>
+                                <div style="font-size:9px;color:var(--t3);font-family:var(--ff-mono);">kWh TODAY</div>
+                            </div>
+                        </div>
+                        <div class="sep"></div>
+                        <div class="energy-row">
+                            <div class="energy-lbl">
+                                <div class="energy-dot" style="background:var(--cyan)"></div>Import Active
+                            </div>
+                            <div class="energy-val" style="color:var(--cyan)">2,229 kWh</div>
+                        </div>
+                        <div class="energy-row">
+                            <div class="energy-lbl">
+                                <div class="energy-dot" style="background:var(--green)"></div>Export Active
+                            </div>
+                            <div class="energy-val" style="color:var(--green)">241 kWh</div>
+                        </div>
+                        <div class="energy-row">
+                            <div class="energy-lbl">
+                                <div class="energy-dot" style="background:var(--amber)"></div>Reactive Import
+                            </div>
+                            <div class="energy-val" style="color:var(--amber)">607 kVArh</div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-hd"><span class="hd-icon">🤖</span>ML Predictive Health (All Generators)</div>
+                        <div class="rul-item">
+                            <div class="rul-name">GEN-01 Windings</div>
+                            <div class="rul-bar">
+                                <div class="rul-fill" style="width:91%;background:var(--green)"></div>
+                            </div>
+                            <div class="rul-val" style="color:var(--green)">91%</div>
+                        </div>
+                        <div class="rul-item">
+                            <div class="rul-name">GEN-01 Bearings</div>
+                            <div class="rul-bar">
+                                <div class="rul-fill" style="width:43%;background:var(--amber)"></div>
+                            </div>
+                            <div class="rul-val" style="color:var(--amber)">43%</div>
+                        </div>
+                        <div class="rul-item">
+                            <div class="rul-name">GEN-02 Windings</div>
+                            <div class="rul-bar">
+                                <div class="rul-fill" style="width:95%;background:var(--green)"></div>
+                            </div>
+                            <div class="rul-val" style="color:var(--green)">95%</div>
+                        </div>
+                        <div class="rul-item">
+                            <div class="rul-name">GEN-02 Bearings</div>
+                            <div class="rul-bar">
+                                <div class="rul-fill" style="width:82%;background:var(--green)"></div>
+                            </div>
+                            <div class="rul-val" style="color:var(--green)">82%</div>
+                        </div>
+                        <div class="rul-item">
+                            <div class="rul-name">GEN-03 Cooling</div>
+                            <div class="rul-bar">
+                                <div class="rul-fill" style="width:88%;background:var(--green)"></div>
+                            </div>
+                            <div class="rul-val" style="color:var(--green)">88%</div>
+                        </div>
+                        <div
+                            style="margin-top:10px;padding:8px 12px;background:var(--amberd);border:1px solid rgba(255,170,0,0.2);border-radius:var(--rs);font-size:11px;color:var(--amber);font-family:var(--ff-mono);">
+                            ⚠ GEN-01 Bearing maintenance predicted in 68h
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-hd"><span class="hd-icon">📉</span>Weekly Energy Trend</div>
+                        <div class="chart-wrap-lg"><canvas id="chart-weekly"></canvas></div>
+                        <div class="chart-legend">
+                            <div class="cl-item">
+                                <div class="cl-line" style="background:var(--cyan)"></div>Import kWh
+                            </div>
+                            <div class="cl-item">
+                                <div class="cl-line" style="background:var(--green)"></div>Export kWh
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI AGENT -->
+                <div class="mt2">
+                    <div class="ai-agent">
+                        <div class="ai-hd"><span>🤖</span>AI ENERGY AGENT — CareFlow Intelligence</div>
+                        <div class="ai-msgs" id="ai-msgs">
+                            <div class="msg ai">Hello! I'm your CareFlow AI Agent. I monitor all 3 generators and 3
+                                distributors. GEN-01 bearing health is at <strong>43%</strong> — maintenance predicted
+                                in 68h. Average PF is <strong>0.89</strong>. How can I help optimize your operations?
+                            </div>
+                        </div>
+                        <div class="ai-input-row">
+                            <input class="ai-input" id="ai-input"
+                                placeholder="Ask about generators, power, maintenance, distributors..."
+                                onkeydown="if(event.key==='Enter')sendAI()">
+                            <button class="ai-send" onclick="sendAI()">ASK →</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TASK ASSIGNMENT -->
+                <div class="g2 mt2">
+                    <div class="card">
+                        <div class="card-hd"><span class="hd-icon">📋</span>Task Assignment — Technicians</div>
+                        <div id="admin-task-list">
+                            <!-- Dynamically rendered -->
+                        </div>
+                        <button class="btn btn-c" style="width:100%;margin-top:10px;padding:10px;"
+                            onclick="showCreateTask()">+ CREATE NEW TASK</button>
+                    </div>
+                    <div class="card">
+                        <div class="card-hd"><span class="hd-icon">🔧</span>Maintenance Schedule</div>
+                        <div class="maint-item">
+                            <div class="maint-dot" style="background:var(--red)"></div>
+                            <div class="maint-info">
+                                <div class="maint-name">GEN-01 Main bearing replacement</div>
+                                <div class="maint-meta">PREDICTED FAILURE: ~68h · Priority: CRITICAL</div>
+                            </div>
+                            <div class="maint-status over">URGENT</div>
+                        </div>
+                        <div class="maint-item">
+                            <div class="maint-dot" style="background:var(--amber)"></div>
+                            <div class="maint-info">
+                                <div class="maint-name">GEN-01 Oil &amp; filter change</div>
+                                <div class="maint-meta">DUE: 4,250h · Current: 4,218h — 32h remaining</div>
+                            </div>
+                            <div class="maint-status soon">SOON</div>
+                        </div>
+                        <div class="maint-item">
+                            <div class="maint-dot" style="background:var(--purple)"></div>
+                            <div class="maint-info">
+                                <div class="maint-name">GEN-02 Harmonic filter inspection</div>
+                                <div class="maint-meta">ML PREDICTED: THD trend rising</div>
+                            </div>
+                            <div class="maint-status pred">ML PRED</div>
+                        </div>
+                        <div class="maint-item">
+                            <div class="maint-dot" style="background:var(--green)"></div>
+                            <div class="maint-info">
+                                <div class="maint-name">GEN-03 Annual service completed</div>
+                                <div class="maint-meta">DONE: 15 Jan 2026 · Next: 15 Jan 2027</div>
+                            </div>
+                            <div class="maint-status done">DONE</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ALARMS -->
+                <div class="card mt2" style="padding-bottom:24px;">
+                    <div class="card-hd"><span class="hd-icon">🔔</span>Active Alarms &amp; Events</div>
+                    <div class="g3">
+                        <div>
+                            <div class="alarm warn"><span class="a-icon">⚠️</span><span class="a-msg">GEN-01 THD L3:
+                                    4.8% (Limit 5%)</span><span class="a-time">02:14</span></div>
+                            <div class="alarm ok"><span class="a-icon">✓</span><span class="a-msg">Frequency nominal:
+                                    50.02Hz</span><span class="a-time">02:10</span></div>
+                        </div>
+                        <div>
+                            <div class="alarm warn"><span class="a-icon">⚠️</span><span class="a-msg">GEN-01 PF dip
+                                    detected L2: 0.81</span><span class="a-time">01:38</span></div>
+                            <div class="alarm ok"><span class="a-icon">✓</span><span class="a-msg">Voltage balance OK
+                                    ±1.2V</span><span class="a-time">00:00</span></div>
+                        </div>
+                        <div>
+                            <div class="alarm crit"><span class="a-icon">🚨</span><span class="a-msg">ML: GEN-01 Bearing
+                                    RUL &lt; 72h</span><span class="a-time">01:15</span></div>
+                            <div class="alarm ok"><span class="a-icon">✓</span><span class="a-msg">GEN-02 & GEN-03: No
+                                    fault flags</span><span class="a-time">00:00</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================================================== -->
+            <!-- =============== TECHNICIAN VIEW =================== -->
+            <!-- ================================================== -->
+            <div class="view" id="view-tech">
+
+                <!-- KPIs -->
+                <div class="g3" style="margin-bottom:14px;">
+                    <div class="kpi c">
+                        <div class="kpi-lbl">P TOTAL</div>
+                        <div class="kpi-val"><span id="t-ptotal">57.4</span><span class="kpi-unit">kW</span></div>
+                        <div class="kpi-sub">ACTIVE POWER (GEN-01)</div>
+                    </div>
+                    <div class="kpi a">
+                        <div class="kpi-lbl">Q TOTAL</div>
+                        <div class="kpi-val"><span id="t-qtotal">28.3</span><span class="kpi-unit">kVAr</span></div>
+                        <div class="kpi-sub">REACTIVE POWER</div>
+                    </div>
+                    <div class="kpi g">
+                        <div class="kpi-lbl">POWER FACTOR</div>
+                        <div class="kpi-val"><span id="t-pf">0.87</span></div>
+                        <div class="kpi-sub">TOTAL PF</div>
+                    </div>
+                </div>
+
+                <!-- FULL PARAMETER GRID -->
+                <div class="card mb">
+                    <div class="card-hd"><span class="hd-icon">⚡</span>Live Register Map — 500ms Poll · Modbus RTU RS485
+                    </div>
+                    <div class="g4">
+                        <div class="param">
+                            <div class="param-lbl">V_L1_N (0x0000)</div>
+                            <div class="param-val"><span id="t-vl1">229.8</span><span class="param-unit">V</span></div>
+                            <div class="param-bar">
+                                <div class="param-bar-fill" style="width:85%;background:var(--cyan)"></div>
+                            </div>
+                            <div class="param-range"><span>0V</span><span>500V</span></div>
+                        </div>
+                        <div class="param">
+                            <div class="param-lbl">V_L2_N (0x0002)</div>
+                            <div class="param-val"><span id="t-vl2">231.2</span><span class="param-unit">V</span></div>
+                            <div class="param-bar">
+                                <div class="param-bar-fill" style="width:86%;background:var(--green)"></div>
+                            </div>
+                            <div class="param-range"><span>0V</span><span>500V</span></div>
+                        </div>
+                        <div class="param">
+                            <div class="param-lbl">V_L3_N (0x0004)</div>
+                            <div class="param-val"><span id="t-vl3">230.4</span><span class="param-unit">V</span></div>
+                            <div class="param-bar">
+                                <div class="param-bar-fill" style="width:85%;background:var(--amber)"></div>
+                            </div>
+                            <div class="param-range"><span>0V</span><span>500V</span></div>
+                        </div>
+                        <div class="param">
+                            <div class="param-lbl">FREQ (0x0046)</div>
+                            <div class="param-val"><span id="t-freq">50.02</span><span class="param-unit">Hz</span>
+                            </div>
+                            <div class="param-bar">
+                                <div class="param-bar-fill" style="width:92%;background:var(--green)"></div>
+                            </div>
+                            <div class="param-range"><span>45Hz</span><span>65Hz</span></div>
+                        </div>
+                        <div class="param">
+                            <div class="param-lbl">I_L1 (0x0006)</div>
+                            <div class="param-val"><span id="t-il1">84.2</span><span class="param-unit">A</span></div>
+                            <div class="param-bar">
+                                <div class="param-bar-fill" style="width:55%;background:var(--cyan)"></div>
+                            </div>
+                            <div class="param-range"><span>0A</span><span>999A</span></div>
+                        </div>
+                        <div class="param">
+                            <div class="param-lbl">I_L2 (0x0008)</div>
+                            <div class="param-val"><span id="t-il2">86.7</span><span class="param-unit">A</span></div>
+                            <div class="param-bar">
+                                <div class="param-bar-fill" style="width:58%;background:var(--green)"></div>
+                            </div>
+                            <div class="param-range"><span>0A</span><span>999A</span></div>
+                        </div>
+                        <div class="param">
+                            <div class="param-lbl">I_L3 (0x000A)</div>
+                            <div class="param-val"><span id="t-il3">83.8</span><span class="param-unit">A</span></div>
+                            <div class="param-bar">
+                                <div class="param-bar-fill" style="width:54%;background:var(--amber)"></div>
+                            </div>
+                            <div class="param-range"><span>0A</span><span>999A</span></div>
+                        </div>
+                        <div class="param">
+                            <div class="param-lbl">PF_TOTAL (0x001E)</div>
+                            <div class="param-val"><span id="t-pf2">0.87</span></div>
+                            <div class="param-bar">
+                                <div class="param-bar-fill" style="width:87%;background:var(--purple)"></div>
+                            </div>
+                            <div class="param-range"><span>-1</span><span>+1</span></div>
+                        </div>
+                        <div class="param">
+                            <div class="param-lbl">P_TOTAL (0x0010)</div>
+                            <div class="param-val"><span id="t-pt2">57.4</span><span class="param-unit">kW</span></div>
+                            <div class="param-bar">
+                                <div class="param-bar-fill" style="width:57%;background:var(--cyan)"></div>
+                            </div>
+                            <div class="param-range"><span>-9999</span><span>9999</span></div>
+                        </div>
+                        <div class="param">
+                            <div class="param-lbl">Q_TOTAL (0x0018)</div>
+                            <div class="param-val"><span id="t-qt2">28.3</span><span class="param-unit">kVAr</span>
+                            </div>
+                            <div class="param-bar">
+                                <div class="param-bar-fill" style="width:28%;background:var(--amber)"></div>
+                            </div>
+                            <div class="param-range"><span>-9999</span><span>9999</span></div>
+                        </div>
+                        <div class="param">
+                            <div class="param-lbl">E_IMPORT (0x0048)</div>
+                            <div class="param-val"><span id="t-eimp">1,247</span><span class="param-unit">kWh</span>
+                            </div>
+                            <div class="param-bar">
+                                <div class="param-bar-fill" style="width:75%;background:var(--green)"></div>
+                            </div>
+                            <div class="param-range"><span>0</span><span>999999</span></div>
+                        </div>
+                        <div class="param">
+                            <div class="param-lbl">THD_V (0x00F8)</div>
+                            <div class="param-val"><span id="t-thd">4.8</span><span class="param-unit">%</span></div>
+                            <div class="param-bar">
+                                <div class="param-bar-fill" style="width:4.8%;background:var(--amber)"></div>
+                            </div>
+                            <div class="param-range"><span>0%</span><span>100%</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- WAVEFORM + THD CHART -->
+                <div class="g2 mb">
+                    <div class="card">
+                        <div class="card-hd"><span class="hd-icon">〜</span>3-Phase Voltage Waveform (Simulated)</div>
+                        <canvas id="chart-wave" height="130"></canvas>
+                    </div>
+                    <div class="card">
+                        <div class="card-hd"><span class="hd-icon">📉</span>THD Trend — Voltage &amp; Current</div>
+                        <canvas id="chart-thd" height="130"></canvas>
+                        <div class="chart-legend" style="margin-top:6px;">
+                            <div class="cl-item">
+                                <div class="cl-line" style="background:var(--amber)"></div>THD-V L1
+                            </div>
+                            <div class="cl-item">
+                                <div class="cl-line" style="background:var(--red)"></div>THD-V L3
+                            </div>
+                            <div class="cl-item">
+                                <div class="cl-line" style="background:var(--cyan)"></div>THD-I L1
+                            </div>
+                        </div>
+                        <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;">
+                            <span class="thd-box">L1 V: 2.4%</span>
+                            <span class="thd-box">L2 V: 2.8%</span>
+                            <span class="thd-box warn" id="thd-l3-box">L3 V: 4.8% ⚠</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- HOME AUTOMATION (moved from admin to technician) -->
+                <div class="card mb">
+                    <div class="card-hd"><span class="hd-icon">🏠</span>Home Automation Control</div>
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+                        <span style="font-size:12px;color:var(--t2)">Total Home Load</span>
+                        <span
+                            style="font-family:var(--ff-heading);font-size:22px;font-weight:700;color:var(--cyan);">4.2
+                            <span style="font-size:13px;font-weight:400;color:var(--t2)">kW</span></span>
+                    </div>
+                    <div class="room-grid">
+                        <div class="room-card">
+                            <div class="room-name">🛋️ Living Room</div>
+                            <div class="device-row"><span class="device-name">Main Lights</span>
+                                <div class="toggle on" onclick="toggleDevice(this)"></div>
+                            </div>
+                            <div class="device-row"><span class="device-name">AC (24°C)</span>
+                                <div class="toggle on" onclick="toggleDevice(this)"></div>
+                            </div>
+                            <div class="device-row"><span class="device-name">TV</span>
+                                <div class="toggle off" onclick="toggleDevice(this)"></div>
+                            </div>
+                        </div>
+                        <div class="room-card">
+                            <div class="room-name">🏭 Workshop</div>
+                            <div class="device-row"><span class="device-name">Machine A</span>
+                                <div class="toggle on" onclick="toggleDevice(this)"></div>
+                            </div>
+                            <div class="device-row"><span class="device-name">Exhaust Fan</span>
+                                <div class="toggle on" onclick="toggleDevice(this)"></div>
+                            </div>
+                            <div class="device-row"><span class="device-name">Work Lights</span>
+                                <div class="toggle on" onclick="toggleDevice(this)"></div>
+                            </div>
+                        </div>
+                        <div class="room-card">
+                            <div class="room-name">🌙 Bedroom</div>
+                            <div class="device-row"><span class="device-name">AC (22°C)</span>
+                                <div class="toggle off" onclick="toggleDevice(this)"></div>
+                            </div>
+                            <div class="device-row"><span class="device-name">Lights</span>
+                                <div class="toggle off" onclick="toggleDevice(this)"></div>
+                            </div>
+                            <div class="device-row"><span class="device-name">Fan</span>
+                                <div class="toggle on" onclick="toggleDevice(this)"></div>
+                            </div>
+                        </div>
+                        <div class="room-card">
+                            <div class="room-name">🔒 Security</div>
+                            <div class="device-row"><span class="device-name">Main Gate</span>
+                                <div class="toggle on" onclick="toggleDevice(this)" style="background:var(--green)">
+                                </div>
+                            </div>
+                            <div class="device-row"><span class="device-name">CCTV</span>
+                                <div class="toggle on" onclick="toggleDevice(this)" style="background:var(--green)">
+                                </div>
+                            </div>
+                            <div class="device-row"><span class="device-name">Alarm</span>
+                                <div class="toggle on" onclick="toggleDevice(this)" style="background:var(--green)">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="room-card">
+                            <div class="room-name">☀️ Solar / Grid</div>
+                            <div class="device-row"><span class="device-name">Solar Input</span>
+                                <div class="toggle on" onclick="toggleDevice(this)" style="background:var(--amber)">
+                                </div>
+                            </div>
+                            <div class="device-row"><span class="device-name">Battery</span>
+                                <div class="toggle on" onclick="toggleDevice(this)" style="background:var(--amber)">
+                                </div>
+                            </div>
+                            <div class="device-row"><span class="device-name">Grid Tie</span>
+                                <div class="toggle off" onclick="toggleDevice(this)"></div>
+                            </div>
+                        </div>
+                        <div class="room-card">
+                            <div class="room-name">🌡️ Environment</div>
+                            <div
+                                style="font-family:var(--ff-heading);font-size:28px;font-weight:700;color:var(--cyan);margin:4px 0;">
+                                27.3°<span style="font-size:14px;color:var(--t2)">C</span></div>
+                            <div style="font-size:10px;color:var(--t2);font-family:var(--ff-mono);">Humidity: 68% · AQI:
+                                42</div>
+                            <div class="device-row" style="margin-top:6px;"><span class="device-name">HVAC Auto</span>
+                                <div class="toggle on" onclick="toggleDevice(this)"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- LIVE POWER CHART -->
+                <div class="card mb">
+                    <div class="card-hd"><span class="hd-icon">📈</span>Live Power — Last 30 Readings</div>
+                    <div class="chart-wrap"><canvas id="chart-power-live"></canvas></div>
+                    <div class="chart-legend">
+                        <div class="cl-item">
+                            <div class="cl-line" style="background:var(--cyan)"></div>P Total (kW)
+                        </div>
+                        <div class="cl-item">
+                            <div class="cl-line" style="background:var(--amber)"></div>Q Total (kVAr)
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ALARMS + MAINTENANCE -->
+                <div class="g2">
+                    <div class="card">
+                        <div class="card-hd"><span class="hd-icon">🚨</span>Alarm Register — Modbus 0x0160</div>
+                        <div class="alarm crit"><span class="a-icon">🚨</span><span class="a-msg">0x0160 Alarm Status:
+                                0x0003 ACTIVE</span><span class="a-time">NOW</span></div>
+                        <div class="alarm warn"><span class="a-icon">⚠️</span><span class="a-msg">0x00F8 THD-V L3: 4.8%
+                                — near limit</span><span class="a-time">02:14</span></div>
+                        <div class="alarm warn"><span class="a-icon">⚠️</span><span class="a-msg">0x001E PF: 0.81 —
+                                capacitor needed</span><span class="a-time">01:38</span></div>
+                        <div class="alarm ok"><span class="a-icon">✓</span><span class="a-msg">0x0162 Overvoltage: NO
+                                FLAG</span><span class="a-time">CLEAR</span></div>
+                        <div class="alarm ok"><span class="a-icon">✓</span><span class="a-msg">0x0164 Overcurrent: NO
+                                FLAG</span><span class="a-time">CLEAR</span></div>
+                        <div class="alarm ok"><span class="a-icon">✓</span><span class="a-msg">0x0046 Frequency: 50.02Hz
+                                NOMINAL</span><span class="a-time">CLEAR</span></div>
+                    </div>
+                    <div class="card">
+                        <div class="card-hd"><span class="hd-icon">🔧</span>Maintenance Log &amp; Assigned Tasks</div>
+                        <div class="maint-item">
+                            <div class="maint-dot" style="background:var(--red)"></div>
+                            <div class="maint-info">
+                                <div class="maint-name">GEN-01 Main bearing replacement</div>
+                                <div class="maint-meta">PREDICTED: 68h remaining · Assign: Tech-01</div>
+                            </div>
+                            <div class="maint-status over">URGENT</div>
+                        </div>
+                        <div class="maint-item">
+                            <div class="maint-dot" style="background:var(--amber)"></div>
+                            <div class="maint-info">
+                                <div class="maint-name">GEN-01 Oil &amp; filter (4,250h)</div>
+                                <div class="maint-meta">32h remaining · Lubricant: 15W-40</div>
+                            </div>
+                            <div class="maint-status soon">DUE SOON</div>
+                        </div>
+                        <div class="maint-item">
+                            <div class="maint-dot" style="background:var(--green)"></div>
+                            <div class="maint-info">
+                                <div class="maint-name">GEN-02 Injector check</div>
+                                <div class="maint-meta">Completed: Tech-02 · All OK</div>
+                            </div>
+                            <div class="maint-status done">DONE</div>
+                        </div>
+                        <div style="margin-top:10px;">
+                            <div class="sec-title" style="margin-bottom:6px">📋 My Assigned Tasks</div>
+                            <div id="tech-task-list">
+                                <!-- Dynamically rendered -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Extra stats -->
+                <div class="g4 mt" style="padding-bottom:24px;">
+                    <div class="kpi r">
+                        <div class="kpi-lbl">ALARM STATUS</div>
+                        <div class="kpi-val">0x0003</div>
+                        <div class="kpi-sub">REG 0x0160</div>
+                    </div>
+                    <div class="kpi a">
+                        <div class="kpi-lbl">GEN-01 RUN HRS</div>
+                        <div class="kpi-val">4,218<span class="kpi-unit">h</span></div>
+                        <div class="kpi-sub">REG 0x0156</div>
+                    </div>
+                    <div class="kpi c">
+                        <div class="kpi-lbl">E EXPORT</div>
+                        <div class="kpi-val">143<span class="kpi-unit">kWh</span></div>
+                        <div class="kpi-sub">REG 0x004A</div>
+                    </div>
+                    <div class="kpi p">
+                        <div class="kpi-lbl">Q REACTIVE IMP</div>
+                        <div class="kpi-val">387<span class="kpi-unit">kVArh</span></div>
+                        <div class="kpi-sub">REG 0x004C</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================================================== -->
+            <!-- ================= WORKER VIEW ===================== -->
+            <!-- ================================================== -->
+            <div class="view" id="view-worker">
+
+                <!-- BIG STATUS -->
+                <div class="big-status ok-mode" id="worker-status">
+                    <div class="big-status-icon">⚡</div>
+                    <div class="big-status-text">GENERATOR ONLINE</div>
+                    <div class="big-status-sub">SITE-01 · All systems nominal</div>
+                </div>
+
+                <!-- INDIVIDUAL LINE VALUES (L1, L2, L3) — READ ONLY -->
+                <div class="sec-title">📊 Line Values</div>
+                <div class="line-value-grid">
+                    <div class="line-value-card l1">
+                        <div class="line-label">LINE 1 (L1)</div>
+                        <div class="line-voltage"><span id="w-vl1">229.8</span><span class="line-unit"> V</span></div>
+                        <div class="line-current">⚡ <span id="w-il1">84.2</span> A</div>
+                    </div>
+                    <div class="line-value-card l2">
+                        <div class="line-label">LINE 2 (L2)</div>
+                        <div class="line-voltage"><span id="w-vl2">231.2</span><span class="line-unit"> V</span></div>
+                        <div class="line-current">⚡ <span id="w-il2">86.7</span> A</div>
+                    </div>
+                    <div class="line-value-card l3">
+                        <div class="line-label">LINE 3 (L3)</div>
+                        <div class="line-voltage"><span id="w-vl3">230.4</span><span class="line-unit"> V</span></div>
+                        <div class="line-current">⚡ <span id="w-il3">83.8</span> A</div>
+                    </div>
+                </div>
+
+                <!-- SIMPLE READINGS -->
+                <div class="g4 mb">
+                    <div class="param" style="text-align:center;padding:16px 12px;">
+                        <div class="param-lbl">⚡ POWER</div>
+                        <div class="param-val" style="font-size:28px;" id="w-power">57.4<span
+                                class="param-unit">kW</span></div>
+                    </div>
+                    <div class="param" style="text-align:center;padding:16px 12px;">
+                        <div class="param-lbl">🔌 VOLTAGE</div>
+                        <div class="param-val" style="font-size:28px;">230<span class="param-unit">V</span></div>
+                    </div>
+                    <div class="param" style="text-align:center;padding:16px 12px;">
+                        <div class="param-lbl">🔄 FREQUENCY</div>
+                        <div class="param-val" style="font-size:28px;"><span id="w-freq">50.02</span><span
+                                class="param-unit">Hz</span></div>
+                    </div>
+                    <div class="param" style="text-align:center;padding:16px 12px;">
+                        <div class="param-lbl">📊 PF</div>
+                        <div class="param-val" style="font-size:28px;"><span id="w-pf">0.87</span></div>
+                    </div>
+                </div>
+
+                <div class="g21">
+                    <div>
+                        <!-- TASKS (READ ONLY) -->
+                        <div class="card mb">
+                            <div class="card-hd"><span class="hd-icon">✅</span>Tasks — Shift 07:00-15:00</div>
+                            <div id="worker-task-list">
+                                <!-- Dynamically rendered -->
+                            </div>
+                            <div style="margin-top:10px;display:flex;align-items:center;justify-content:space-between;">
+                                <div style="font-size:12px;color:var(--t2);font-family:var(--ff-mono);" id="task-count">
+                                    2/6 completed</div>
+                                <div style="font-size:11px;color:var(--green);" id="task-pct">33%</div>
+                            </div>
+                        </div>
+
+                        <!-- SAFETY CHECKLIST (READ ONLY) -->
+                        <div class="card mb">
+                            <div class="card-hd"><span class="hd-icon">🦺</span>Safety Checklist</div>
+                            <div class="task-item readonly">
+                                <div class="task-check done">✓</div>
+                                <div class="task-text">PPE worn — ear protection, gloves</div><span
+                                    class="task-pri low">DONE</span>
+                            </div>
+                            <div class="task-item readonly">
+                                <div class="task-check done">✓</div>
+                                <div class="task-text">Emergency stop accessible</div><span
+                                    class="task-pri low">DONE</span>
+                            </div>
+                            <div class="task-item readonly">
+                                <div class="task-check done">✓</div>
+                                <div class="task-text">Fire extinguisher checked</div><span
+                                    class="task-pri low">DONE</span>
+                            </div>
+                            <div class="task-item readonly">
+                                <div class="task-check"></div>
+                                <div class="task-text">Lockout/Tagout verified</div><span
+                                    class="task-pri high">HIGH</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <!-- ACTIVE ALERTS -->
+                        <div class="card mb">
+                            <div class="card-hd"><span class="hd-icon">🔔</span>Active Alerts</div>
+                            <div class="alarm warn"><span class="a-icon">⚠️</span><span class="a-msg">Voltage L3 near
+                                    limit</span><span class="a-time">02:14</span></div>
+                            <div class="alarm crit"><span class="a-icon">🚨</span><span class="a-msg">Bearing
+                                    maintenance URGENT — 68h</span><span class="a-time">01:15</span></div>
+                            <div class="alarm ok"><span class="a-icon">✓</span><span class="a-msg">Generator running
+                                    normally</span><span class="a-time">NOW</span></div>
+                        </div>
+
+                        <!-- EMERGENCY REPORT -->
+                        <div class="card mb">
+                            <div class="card-hd"><span class="hd-icon">🚨</span>Emergency Report</div>
+                            <button class="report-btn" onclick="submitReport()" style="font-size:20px;padding:20px;">🚨
+                                REPORT ISSUE</button>
+                        </div>
+
+                        <!-- SHIFT LOG -->
+                        <div class="card" style="padding-bottom:24px;">
+                            <div class="card-hd"><span class="hd-icon">📝</span>Shift Log</div>
+                            <div style="font-size:11px;color:var(--t2);font-family:var(--ff-mono);line-height:1.8;">
+                                <div>07:02 — Shift started. Generator running.</div>
+                                <div>07:15 — Fuel level: 78%. Oil pressure: OK.</div>
+                                <div>08:30 — LoRa uplink confirmed.</div>
+                                <div>09:45 — Warning: THD L3 elevated.</div>
+                                <div>10:20 — Reported to Technician Rafiq.</div>
+                                <div style="color:var(--cyan);">— Monitoring...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- /content -->
+    </div><!-- /main -->
+
+    <!-- ======================== TASK CREATION MODAL ======================== -->
+    <div class="modal-overlay" id="task-modal">
+        <div class="modal">
+            <div class="modal-title">📋 Create New Task</div>
+            <input class="modal-input" id="new-task-text" placeholder="Task description...">
+            <select class="modal-input" id="new-task-assign">
+                <option value="TECH-01">TECH-01 — Rafiq Ahmed</option>
+                <option value="TECH-02">TECH-02 — Kamal Hossain</option>
+                <option value="TECH-03">TECH-03 — Sohel Mia</option>
+            </select>
+            <select class="modal-input" id="new-task-priority">
+                <option value="high">🔴 High Priority</option>
+                <option value="med">🟡 Medium Priority</option>
+                <option value="low">🟢 Low Priority</option>
+            </select>
+            <div class="modal-btns">
+                <button class="btn btn-c" onclick="submitNewTask()">CREATE TASK →</button>
+                <button class="btn btn-g" onclick="closeCreateTask()">CANCEL</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/auth.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/charts.js"></script>
+    <script src="js/ai-agent.js"></script>
+    <script src="js/dashboard.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,123 @@
+/* =============================================
+   CAREFLOW IIoT — DESIGN TOKENS
+   ============================================= */
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=JetBrains+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap');
+
+:root {
+  /* Background */
+  --bg: #030305;
+  --bg1: #08080f;
+  --bg2: #0c0c18;
+  --bg3: #101020;
+
+  /* Glass */
+  --glass: rgba(255,255,255,0.04);
+  --glass2: rgba(255,255,255,0.07);
+  --glass3: rgba(255,255,255,0.10);
+
+  /* Borders */
+  --gb: rgba(255,255,255,0.08);
+  --gbh: rgba(255,255,255,0.15);
+  --gb2: rgba(255,255,255,0.12);
+
+  /* Accent Colors */
+  --cyan: #00CFFF;
+  --cyand: rgba(0,207,255,0.14);
+  --green: #22FF88;
+  --greend: rgba(34,255,136,0.12);
+  --red: #FF3344;
+  --redd: rgba(255,51,68,0.12);
+  --amber: #FFAA00;
+  --amberd: rgba(255,170,0,0.12);
+  --purple: #9B59FF;
+  --purpled: rgba(155,89,255,0.13);
+  --pink: #FF6FD8;
+  --pinkd: rgba(255,111,216,0.12);
+
+  /* Text */
+  --t1: #E8E8F2;
+  --t2: #888899;
+  --t3: #444458;
+
+  /* Layout */
+  --sw: 230px;
+  --r: 12px;
+  --rs: 8px;
+
+  /* Fonts */
+  --ff-heading: 'Rajdhani', sans-serif;
+  --ff-mono: 'JetBrains Mono', monospace;
+  --ff-body: 'DM Sans', sans-serif;
+}
+
+/* =============================================
+   RESET & BASE
+   ============================================= */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: var(--ff-body);
+  background: var(--bg);
+  color: var(--t1);
+}
+
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+
+/* =============================================
+   ANIMATIONS
+   ============================================= */
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(34,255,136,0.5); }
+  50% { box-shadow: 0 0 0 8px rgba(34,255,136,0); }
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(0,207,255,0.2); }
+  50% { box-shadow: 0 0 40px rgba(0,207,255,0.4); }
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes gridMove {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(40px); }
+}
